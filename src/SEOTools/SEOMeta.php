@@ -64,6 +64,13 @@ class SEOMeta implements MetaTagsContract
     protected $canonical;
 
     /**
+     * The AMP URL.
+     *
+     * @var string
+     */
+    protected $amphtml;
+
+    /**
      * The prev URL in pagination.
      *
      * @var string
@@ -126,6 +133,7 @@ class SEOMeta implements MetaTagsContract
         $keywords = $this->getKeywords();
         $metatags = $this->getMetatags();
         $canonical = $this->getCanonical();
+        $amphtml = $this->getAmpHtml();
         $prev = $this->getPrev();
         $next = $this->getNext();
         $languages = $this->getAlternateLanguages();
@@ -140,7 +148,7 @@ class SEOMeta implements MetaTagsContract
             $html[] = "<meta name=\"description\" content=\"{$description}\">";
         }
 
-        if (! empty($keywords)) {
+        if (!empty($keywords)) {
             $keywords = implode(', ', $keywords);
             $html[] = "<meta name=\"keywords\" content=\"{$keywords}\">";
         }
@@ -159,6 +167,10 @@ class SEOMeta implements MetaTagsContract
 
         if ($canonical) {
             $html[] = "<link rel=\"canonical\" href=\"{$canonical}\"/>";
+        }
+
+        if ($amphtml) {
+            $html[] = "<link rel=\"amphtml\" href=\"{$amphtml}\"/>";
         }
 
         if ($prev) {
@@ -254,7 +266,7 @@ class SEOMeta implements MetaTagsContract
      */
     public function setKeywords($keywords)
     {
-        if (! is_array($keywords)) {
+        if (!is_array($keywords)) {
             $keywords = explode(', ', $keywords);
         }
 
@@ -332,6 +344,20 @@ class SEOMeta implements MetaTagsContract
     public function setCanonical($url)
     {
         $this->canonical = $url;
+
+        return $this;
+    }
+
+    /**
+     * Sets the AMP html URL.
+     *
+     * @param string $url
+     *
+     * @return MetaTagsContract
+     */
+    public function setAmpHtml($url)
+    {
+        $this->amphtml = $url;
 
         return $this;
     }
@@ -480,7 +506,17 @@ class SEOMeta implements MetaTagsContract
     {
         $canonical_config = $this->config->get('defaults.canonical', false);
 
-        return $this->canonical ?: (($canonical_config === null) ? app('url')->current() : $canonical_config);
+        return $this->canonical ?: (($canonical_config === null) ? app('url')->full() : $canonical_config);
+    }
+
+    /**
+     * Get the AMP html URL.
+     *
+     * @return string
+     */
+    public function getAmpHtml()
+    {
+        return $this->amphtml;
     }
 
     /**
@@ -525,10 +561,10 @@ class SEOMeta implements MetaTagsContract
         $this->next = null;
         $this->prev = null;
         $this->canonical = null;
+        $this->amphtml = null;
         $this->metatags = [];
         $this->keywords = [];
         $this->alternateLanguages = [];
-        $this->canonical = null;
     }
 
     /**
@@ -551,7 +587,7 @@ class SEOMeta implements MetaTagsContract
     protected function loadWebMasterTags()
     {
         foreach ($this->config->get('webmaster_tags', []) as $name => $value) {
-            if (! empty($value)) {
+            if (!empty($value)) {
                 $meta = array_get($this->webmasterTags, $name, $name);
                 $this->addMeta($meta, $value);
             }
